@@ -1,0 +1,17 @@
+**/.DS_Store
+
+## clojure
+.calva/
+.clj-kondo/
+.cpcache/
+.lsp/
+.nrepl-port
+
+
+## test pdfs might be throughout the system, just don't track them
+**/test.pdf
+
+# IDE files
+.vscode/
+.idea/
+
