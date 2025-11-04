@@ -1,0 +1,59 @@
+(ns pdf.context.operators)
+
+(def text-operators
+  {:begin-text "BT"
+   :end-text "ET"
+   :set-font "Tf"
+   :set-text-matrix "Tm"
+   :show-text "Tj"
+   :show-text-adjusted "TJ"
+   :move-text-position "Td"
+   :move-text-position-set-leading "TD"
+   :set-leading "TL"
+   :set-character-spacing "Tc"
+   :set-word-spacing "Tw"
+   :set-horizontal-scaling "Tz"
+   :set-text-rise "Ts"
+   :set-render-mode "Tr"
+   :next-line "T*"})
+
+(def graphics-operators
+  {:save-state "q"
+   :restore-state "Q"
+   :concat-matrix "cm"
+   :set-line-width "w"
+   :set-line-cap "J"
+   :set-line-join "j"
+   :set-miter-limit "M"
+   :set-dash "d"
+   :move-to "m"
+   :line-to "l"
+   :curve-to "c"
+   :rectangle "re"
+   :close-path "h"
+   :stroke "S"
+   :close-stroke "s"
+   :fill "f"
+   :fill-even-odd "f*"
+   :fill-stroke "B"
+   :fill-stroke-even-odd "B*"
+   :close-fill-stroke "b"
+   :end-path "n"
+   :clip "W"
+   :clip-even-odd "W*"
+   :draw-xobject "Do"})
+
+(def color-operators
+  {:set-gray-fill "g"
+   :set-gray-stroke "G"
+   :set-rgb-fill "rg"
+   :set-rgb-stroke "RG"
+   :set-cmyk-fill "k"
+   :set-cmyk-stroke "K"
+   :set-color-space-fill "cs"
+   :set-color-space-stroke "CS"
+   :set-color-fill "sc"
+   :set-color-stroke "SC"})
+
+(def operators
+  (merge text-operators graphics-operators color-operators))

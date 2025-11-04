@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>clojure.pdf demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; font-family: ui-sans-serif, system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; }
+    header { padding: 8px 16px; border-bottom: 1px solid #ddd; display: flex; flex-wrap: wrap;
+             gap: 12px; align-items: center; }
+    header h1 { font-size: 14px; margin: 0; font-weight: 600; }
+    header .spacer { flex: 1; }
+    label { font-size: 12px; color: #555; display: flex; gap: 6px; align-items: center; }
+    select, button { padding: 4px 10px; font-size: 13px; cursor: pointer; }
+
+    main { flex: 1; display: flex; min-height: 0; }
+    .pane { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+
+    /* the drag handle: a thin bar with a wider invisible hit area */
+    #gutter { flex: 0 0 6px; background: #ddd; cursor: col-resize; touch-action: none; position: relative; }
+    #gutter:hover, #gutter:active { background: #bbb; }
+    #gutter::after { content: ""; position: absolute; inset: -4px; }
+
+    #editor { flex: 1; min-height: 0; overflow: hidden; }
+    .cm-editor { height: 100%; }
+    .cm-scroller { font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+    #preview { flex: 1; min-height: 0; border: 0; background: #f3f3f3; }
+    #error { margin: 0; padding: 12px; color: #b00; background: #fff5f5; font: 12px/1.4 ui-monospace, monospace;
+             white-space: pre-wrap; display: none; border-top: 1px solid #f0caca; max-height: 40%; overflow: auto; }
+
+    /* narrow screens: stack the panes and flip the divider to a horizontal one */
+    @media (max-width: 720px) {
+      main { flex-direction: column; }
+      #gutter { cursor: row-resize; flex-basis: 6px; }
+      .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>clojure.pdf</h1>
+    <label>example <select id="examples"></select></label>
+    <button id="run">Run</button>
+    <span class="spacer"></span>
+  </header>
+  <main id="split">
+    <div class="pane" id="pane-editor"><div id="editor"></div></div>
+    <div id="gutter" title="drag to resize"></div>
+    <div class="pane">
+      <iframe id="preview" title="PDF preview"></iframe>
+      <pre id="error"></pre>
+    </div>
+  </main>
+  <script src="js/main.js"></script>
+</body>
+</html>

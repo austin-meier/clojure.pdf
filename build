@@ -1,0 +1,18 @@
+#!/bin/bash
+
+DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+
+# jvm
+clj -X:test
+
+clj -T:build clean
+clj -T:build jar
+echo "Built JAR"
+
+# esm
+cd "$DIR/esm"
+npm ci
+npm run build
+npm run test
+echo "Built ESM"
+

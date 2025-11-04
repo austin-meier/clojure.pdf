@@ -1,0 +1,31 @@
+# build fun
+target/
+
+# clojure
+.calva/
+.clj-kondo/
+.cpcache/
+.lsp/
+.nrepl-port
+
+# test pdfs might be throughout the system, just don't track them
+**/test.pdf
+
+# ide stuff
+.vscode/
+.idea/
+
+# ai
+context.md
+.claude/
+
+# os stuff
+**/.DS_Store
+
+# runnable documentation examples (documentation/example) output
+example-*.pdf
+
+# cljs / shadow-cljs ESM build
+/esm/node_modules/
+/esm/dist/
+/esm/.shadow-cljs/

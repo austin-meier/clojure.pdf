@@ -1,0 +1,21 @@
+{:paths ["src"]
+ :deps {}
+ :aliases
+ {:dev
+  {:extra-paths ["dev"]}
+
+  ;; runnable docs: clojure -M:examples -m example.<name>
+  :examples
+  {:extra-paths ["documentation"]}
+
+  :test
+  {:extra-paths ["test"]
+   :extra-deps {io.github.cognitect-labs/test-runner
+                {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+   :main-opts ["-m" "cognitect.test-runner"]
+   :exec-fn cognitect.test-runner.api/test}
+
+  :build
+  {:deps {io.github.clojure/tools.build {:git/tag "v0.10.11" :git/sha "c6c670a"}
+          slipset/deps-deploy           {:mvn/version "0.2.2"}}
+   :ns-default build}}}

@@ -1,0 +1,45 @@
+{:source-paths ["../src"]
+ :dependencies []
+ :builds
+ {:esm
+  {:target     :esm
+   :runtime    :node
+   :output-dir "dist"
+   :js-options {:js-provider :import}
+   :modules
+   {:pdf
+    {:exports
+     {parse      pdf.parse.core/parse
+      parseFile  pdf.parse.core/parse-file
+      serialize  pdf.context.pdf/serialize
+      save       pdf.context.pdf/save
+      newPdf     pdf.context.pdf/new-pdf
+      newPage    pdf.context.page/new-page
+      withPage   pdf.context.page/with-page
+      newFont    pdf.context.text.font/new-font
+      newImage   pdf.context.image/new-image
+      withText   pdf.api.js/with-text
+      withImage  pdf.api.js/with-image
+      withLayout pdf.api.js/with-layout
+      toBlob     pdf.api.js/to-blob}}}}
+
+  :browser
+  {:target     :esm
+   :runtime    :browser
+   :output-dir "dist/browser"
+   :js-options {:resolve {"node:zlib" {:target :file :file "shims/zlib.js"}
+                          "node:fs"   {:target :file :file "shims/fs.js"}}}
+   :modules
+   {:pdf
+    {:exports
+     {parse      pdf.parse.core/parse
+      serialize  pdf.context.pdf/serialize
+      newPdf     pdf.context.pdf/new-pdf
+      newPage    pdf.context.page/new-page
+      withPage   pdf.context.page/with-page
+      newFont    pdf.context.text.font/new-font
+      newImage   pdf.context.image/new-image
+      withText   pdf.api.js/with-text
+      withImage  pdf.api.js/with-image
+      withLayout pdf.api.js/with-layout
+      toBlob     pdf.api.js/to-blob}}}}}}

@@ -1,0 +1,32 @@
+;; The demo site: a browser app that evals Clojure snippets against the pdf
+;; library live (via SCI) and previews the resulting PDF. Reuses ../src for the
+;; library and the ESM build's pako shim so pdf.utils.flate's node:zlib branch
+;; resolves in the browser.
+;;
+;;   npm install
+;;   npm run core-test   # headless: SCI -> pdf context -> serialize -> bytes
+;;   npm run dev         # watch build, serve public/ at http://localhost:8080
+;;   npm run release     # optimized build into public/js for GitHub Pages
+{:source-paths ["src" "../src"]
+ :dependencies [[org.babashka/sci "0.9.44"]]
+ :dev-http {8080 "public"}
+ :builds
+ {:site
+  {:target     :browser
+   :output-dir "public/js"
+   ;; relative so the app works under a GitHub Pages project subpath
+   ;; (user.github.io/repo/), not just at the server root.
+   :asset-path "js"
+   ;; same trick as esm/shadow-cljs.edn :browser — pako stands in for node:zlib,
+   ;; and node:fs resolves to a throwing stub (the browser uses byte-based entry
+   ;; points, never a filesystem path).
+   :js-options {:resolve {"node:zlib" {:target :file :file "shims/zlib.js"}
+                          "node:fs"   {:target :file :file "shims/fs.js"}}}
+   :modules    {:main {:init-fn site.main/init}}}
+
+  ;; headless de-risk: runs the eval core under Node (node:zlib is native here,
+  ;; so no shim needed), proving SCI + the library + serialize before any UI.
+  :core-test
+  {:target    :node-script
+   :output-to "out/core-test.js"
+   :main      site.core-test/-main}}}

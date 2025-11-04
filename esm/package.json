@@ -1,0 +1,43 @@
+{
+  "name": "clojure-pdf",
+  "version": "0.0.0",
+  "description": "Pure-Clojure PDF library, compiled to ESM (Node + browser) via shadow-cljs. Authoring, layout, vector/SVG, images, and parsing, with zero runtime dependencies.",
+  "type": "module",
+  "main": "./dist/pdf.js",
+  "exports": {
+    ".": {
+      "browser": "./dist/browser/pdf.js",
+      "default": "./dist/pdf.js"
+    }
+  },
+  "files": [
+    "dist/pdf.js",
+    "dist/browser/pdf.js"
+  ],
+  "keywords": [
+    "pdf",
+    "pdf-generation",
+    "pdf-parser",
+    "clojurescript",
+    "esm"
+  ],
+  "author": "Austin Meier",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/austin-meier/clojure.pdf.git",
+    "directory": "esm"
+  },
+  "homepage": "https://github.com/austin-meier/clojure.pdf#readme",
+  "bugs": "https://github.com/austin-meier/clojure.pdf/issues",
+  "scripts": {
+    "build": "shadow-cljs release esm browser",
+    "watch": "shadow-cljs watch esm",
+    "test": "node tests/test.mjs && node tests/test-browser.mjs",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "pako": "^2.1.0",
+    "shadow-cljs": "^2.28.20"
+  }
+}

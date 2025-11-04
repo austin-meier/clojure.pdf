@@ -1,0 +1,68 @@
+name: deploy-site
+
+# Build the ClojureScript demo site (site/) and publish it to GitHub Pages on
+# every push to main that touches the site or the library. One-time setup:
+# repo Settings -> Pages -> Source: "GitHub Actions".
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "src/**"
+      - ".github/workflows/deploy-site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one live deploy at a time; a newer push cancels an in-flight run
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v7
+
+      # shadow-cljs compiles on the JVM, so the build needs Java too
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.m2/repository
+          key: cljdeps-${{ hashFiles('site/shadow-cljs.edn') }}
+          restore-keys: cljdeps-
+
+      - run: npm ci
+      # gate: every gallery snippet must still serialize to a real PDF
+      - run: npm run core-test
+      - run: npm run release
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5
