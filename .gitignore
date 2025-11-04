@@ -1,17 +1,20 @@
-**/.DS_Store
+# build fun
+target/
 
-## clojure
+# clojure
 .calva/
 .clj-kondo/
 .cpcache/
 .lsp/
 .nrepl-port
 
-
-## test pdfs might be throughout the system, just don't track them
+# test pdfs might be throughout the system, just don't track them
 **/test.pdf
 
-# IDE files
+# ide stuff
 .vscode/
 .idea/
+
+# os stuff
+**/.DS_Store
 
