@@ -36,9 +36,9 @@
   (let [pages-idx (root-pages-idx ctx)
         [ctx-after-contents page-ctx'] (reduce-contents ctx (assoc page-ctx :parent (->ref pages-idx)))
         page-ref (->ref (count (:objects ctx-after-contents)))]
-        (-> ctx-after-contents
-                      (update :objects conj page-ctx')
-                      (update-in [:objects pages-idx :kids] conj page-ref))))
+    (-> ctx-after-contents
+        (update :objects conj page-ctx')
+        (update-in [:objects pages-idx :kids] conj page-ref))))
 
 (defn new-page
   "Creates a new page context for use within the pdf context."
@@ -50,3 +50,10 @@
   "Adds a content stream to the page context."
   [page-ctx stream]
   (update page-ctx :contents conj stream))
+
+(defn add-resource
+  "Adds resource to the page context."
+  [page-ctx resource]
+  (if (:resources page-ctx)
+    (update page-ctx :resources merge resource)
+    (assoc page-ctx :resources resource)))

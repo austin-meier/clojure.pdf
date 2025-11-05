@@ -2,7 +2,8 @@
   (:require
    [clojure.string :as str]
    [context.stream :as stream]
-   [file.xref :as xref])
+   [file.xref :as xref]
+   [utils.string :refer [kebab-to-pascal]])
   (:import
    [context.stream PdfStream]
    [file.xref IndirectRef]))
@@ -26,7 +27,10 @@
   (to-pdf [s] (str "(" s ")"))
 
   clojure.lang.Keyword
-  (to-pdf [k] (str "/" (str/capitalize (name k))))
+  (to-pdf [k] (str "/" (kebab-to-pascal (name k))))
+
+  clojure.lang.Symbol
+  (to-pdf [k] (str "/"  (name k)))
 
   clojure.lang.IPersistentVector
   (to-pdf [v] (str "[" (str/join " " (map to-pdf v)) "]"))
@@ -52,10 +56,10 @@
           header-bytes (.getBytes header-str "UTF-8")
           footer-bytes (.getBytes footer-str "UTF-8")]
       (String. (byte-array
-       (concat
-        (seq header-bytes)
-        (:bytes stream)
-        (seq footer-bytes))) "UTF-8")))
+                (concat
+                 (seq header-bytes)
+                 (:bytes stream)
+                 (seq footer-bytes))) "UTF-8")))
 
   IndirectRef
   (to-pdf [{:keys [obj-num gen]}]
