@@ -28,6 +28,6 @@
 (def test-pdf-ctx
   {:version 2.0
    :objects
-     [{:type :catalog}]})
+   [{:type :catalog}]})
 
 (serialize test-pdf-ctx)

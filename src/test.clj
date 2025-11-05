@@ -4,7 +4,8 @@
    [context.pdf :refer [new-pdf]]
    [context.stream :refer [string->stream]]
    [file.pdf :refer [serialize]]
-   [utils.dimension :refer [inches->dim]]))
+   [utils.dimension :refer [inches->dim]]
+   [validation.context :refer [validate-context]]))
 
 (def draw-stream
   (str
@@ -20,4 +21,5 @@
                   (with-stream (string->stream draw-stream))))))
 
 (defn -main []
+  (println (validate-context pdf-ctx))
   (spit "./test.pdf" (serialize pdf-ctx)))

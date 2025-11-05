@@ -16,7 +16,6 @@
    - :serialized-bytes=accumulated UTF-8 bytes of all objects
    - :object-offsete=absolute byte offsets for each object start."
   [serialization-ctx]
-  (print serialization-ctx)
   (reduce
    (fn [ctx [idx obj]]
      (let [offset (count (:serialized-bytes ctx))

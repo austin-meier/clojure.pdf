@@ -1,14 +1,10 @@
-(ns validation.context
-  (:require [file.xref :refer [->ref ref-index?]] ; adapt to your helpers
-            [clojure.string :as str]))
+(ns validation.context)
 
-;; Standardized validator error definitions. Keys are error ids and the
-;; values are maps describing the default message, path and severity.
 (def validators
   {:ctx-nil {:message "Context is nil" :path [] :severity :error}
    :no-objects {:message "PDF context has no :objects vector" :path [:objects] :severity :error}
    :no-catalog {:message "Missing catalog object (:type :catalog)" :path [:objects] :severity :error}
-   :pages-empty {:message "Pages object has empty :kids" :path [:objects] :severity :error}
+   :pages-empty {:message "The root pages object has empty :kids" :path [:objects] :severity :error}
    :catalog-pages-ref-invalid {:message "Catalog pages reference is invalid" :path [:objects] :severity :error}})
 
 (defn make-error [id & {:keys [message path severity data] :or {message nil path nil severity nil data nil}}]
@@ -45,7 +41,7 @@
       {:ok false :error (make-error :pages-empty)})))
 
 (defn valid-ref? [ctx ref]
-  (some? (get (:objects ctx) ((dec (:obj-num ref))) ref)))
+  (some? (get (:objects ctx) (dec (:obj-num ref)) ref)))
 
 (defn catalog-ref-valid? [ctx]
   (let [catalog (find-first-object ctx #(= :catalog (:type %)))]
@@ -67,13 +63,8 @@
   "Run validators (fn [ctx] => {:ok true} or {:ok false :error err-map}) and collect errors.
   Returns {:valid? boolean :errors [err-map ...]}"
   [ctx validators]
-  (let [results (keep (fn [v]
-                        (let [r (v ctx)]
-                          (when (and (map? r) (false? (:ok r)))
-                            (:error r))))
-                      validators)
-        errors (vec results)]
-    {:valid? (empty? errors) :errors errors}))
+  (let [results (map (fn [v] (v ctx)) validators)]
+    {:valid (every? true? (map :ok results)) :errors (vec (keep :error results))}))
 
 (defn validate-context
   "Run default validators. Returns {:valid? boolean :errors [...]}"
