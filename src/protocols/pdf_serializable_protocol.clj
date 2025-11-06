@@ -1,4 +1,4 @@
-(ns objects.pdf-serializable-protocol
+(ns protocols.pdf-serializable-protocol
   (:require
    [clojure.string :as str]
    [context.stream :as stream]
@@ -31,6 +31,9 @@
 
   clojure.lang.Symbol
   (to-pdf [k] (str "/"  (name k)))
+
+  clojure.lang.IPersistentList
+  (to-pdf [l] (to-pdf (vec l)))
 
   clojure.lang.IPersistentVector
   (to-pdf [v] (str "[" (str/join " " (map to-pdf v)) "]"))

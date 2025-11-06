@@ -1,7 +1,7 @@
 (ns file.body
   (:require
    [clojure.string :as str]
-   [objects.pdf-serializable-protocol :refer [to-pdf]]))
+   [protocols.pdf-serializable-protocol :refer [to-pdf]]))
 
 
 ;; PDF binary streams

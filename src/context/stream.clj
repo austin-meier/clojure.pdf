@@ -2,6 +2,9 @@
 
 (defrecord PdfStream [dict bytes])
 
+(defn pdf-stream? [obj]
+  (instance? PdfStream obj))
+
 (defn bytes->stream
   "Convert a byte array to a pdf stream object"
   ([bytes]

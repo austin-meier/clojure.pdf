@@ -2,6 +2,9 @@
 
 (defrecord IndirectRef [obj-num gen])
 
+(defn indirect-ref? [obj]
+  (instance? IndirectRef obj))
+
 ;; Object handling
 (defn ->ref
   "Takes an array index of the object and

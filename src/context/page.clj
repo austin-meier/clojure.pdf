@@ -1,6 +1,5 @@
 (ns context.page
   (:require
-   [context.pdf :refer [add-object]]
    [file.xref :refer [->ref]]
    [utils.collection :refer [first-index]]
    [utils.dimension :refer [dim->points]])
@@ -20,23 +19,12 @@
   [ctx]
   (->ref (root-pages-idx ctx)))
 
-
-(defn- reduce-contents
-  [ctx page-ctx]
-  (let [contents (or (:contents page-ctx) [])
-        init [ctx (assoc page-ctx :contents [])]
-        step (fn [[acc-ctx acc-page] content]
-               (let [[new-ctx obj-ref] (add-object acc-ctx content)
-                     acc-page' (update acc-page :contents conj obj-ref)]
-                 [new-ctx acc-page']))]
-    (reduce step init contents)))
-
 (defn with-page
   [ctx page-ctx]
   (let [pages-idx (root-pages-idx ctx)
-        [ctx-after-contents page-ctx'] (reduce-contents ctx (assoc page-ctx :parent (->ref pages-idx)))
-        page-ref (->ref (count (:objects ctx-after-contents)))]
-    (-> ctx-after-contents
+        page-ctx' (assoc page-ctx :parent (->ref pages-idx))
+        page-ref (->ref (count (:objects ctx)))]
+    (-> ctx
         (update :objects conj page-ctx')
         (update-in [:objects pages-idx :kids] conj page-ref))))
 

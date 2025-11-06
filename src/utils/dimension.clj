@@ -1,6 +1,6 @@
 (ns utils.dimension
   (:require
-   [objects.pdf-serializable-protocol :refer [PdfSerializable]]))
+   [protocols.pdf-serializable-protocol :refer [PdfSerializable]]))
 
 (defrecord Dimension [points]
   Object

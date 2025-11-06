@@ -1,19 +1,18 @@
 (ns file.trailer
   (:require
-   [context.pdf :refer [catalog-ref]]
-   [objects.pdf-serializable-protocol :refer [to-pdf]]))
+   [protocols.pdf-serializable-protocol :refer [to-pdf]]))
 
 (defn build-trailer-map
-  "Builds the trailer map for a context"
-  [ctx]
-  {:size (count (:objects ctx))
-   :root (catalog-ref ctx)})
+  "Builds the trailer map for a serialization context"
+  [serialization-ctx]
+  {:size (count (:objects (:ctx serialization-ctx)))
+   :root (:catalog-ref serialization-ctx)})
 
 (defn serialize-trailer
   "Appends the PDF trailer to the serialized bytes in the context.
    Uses :xref-offset for startxref and updates the serialization context."
   [serialization-ctx]
-  (let [trailer-map (build-trailer-map (:ctx serialization-ctx))
+  (let [trailer-map (build-trailer-map serialization-ctx)
         trailer-str (str "trailer\n"
                          (to-pdf trailer-map) "\n"
                          "startxref\n"

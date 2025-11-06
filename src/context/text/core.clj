@@ -3,10 +3,12 @@
 (defn with-text
   "Adds a text stream to the page context."
   [page-ctx txt-ctx]
-  (update page-ctx :contents conj txt-ctx))
+  (-> page-ctx
+      (update :contents conj (:text txt-ctx))
+      (update :resources conj (:font txt-ctx))))
 
 (defn new-text
   "Creates a new text context for use on a page."
-  []
-  {:type :text
-   :content []})
+  [font-ctx text]
+  {:text {:text text}
+   :font font-ctx})
