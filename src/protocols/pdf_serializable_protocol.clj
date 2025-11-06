@@ -12,6 +12,10 @@
   ;; Serialize to a PDF text format definition
   (to-pdf [x]))
 
+(defn pdf-name [s]
+  (str "/" (clojure.string/replace s #"[^!-\)\+-.0-9:;=?@A-Z\[\]_a-z~]"
+                                   #(format "#%02X" (int (first %))))))
+
 ;; Implement the protocol for core clojure data structures
 (extend-protocol PdfSerializable
   nil
@@ -27,10 +31,10 @@
   (to-pdf [s] (str "(" s ")"))
 
   clojure.lang.Keyword
-  (to-pdf [k] (str "/" (kebab-to-pascal (name k))))
+  (to-pdf [k] (pdf-name (kebab-to-pascal (name k))))
 
   clojure.lang.Symbol
-  (to-pdf [k] (str "/"  (name k)))
+  (to-pdf [k] (pdf-name (name k)))
 
   clojure.lang.IPersistentList
   (to-pdf [l] (to-pdf (vec l)))

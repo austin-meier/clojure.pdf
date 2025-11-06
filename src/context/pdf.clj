@@ -12,10 +12,10 @@
 
 ;; This contains the root PDF context structure and core functions for creating contexts
 (defn new-pdf []
-  {:version 2.0
+  {:version 1.7
    :objects
    [{:type :catalog
-     :version 2.0
+     :version 1.7
      :pages (->ref 1)}
     {:type :pages
      :kids []}]})
@@ -59,16 +59,20 @@
       [ctx' ref])
 
     (serializable-map? v)
-    (reduce (fn [[acc-ctx acc-map] [k val]]
-              (let [[new-ctx val'] (resolve-value acc-ctx val)]
-                [new-ctx (assoc acc-map k val')]))
-            [ctx {}]
-            v)
+    (let [[ctx' resolved-map]
+          (reduce (fn [[acc-ctx acc-map] [k val]]
+                    (let [[new-ctx val'] (resolve-value acc-ctx val)]
+                      [new-ctx (assoc acc-map k val')]))
+                  [ctx {}]
+                  v)]
+      ;; Add the resolved map as an indirect object and return its ref
+      ;; Eventually can add more fancy logic like if less than 4 keys inline it
+      (add-object ctx' resolved-map))
 
     (sequential? v)
     (reduce (fn [[acc-ctx acc-vec] elem]
               (let [[new-ctx e'] (resolve-value acc-ctx elem)]
-                [new-ctx (conj acc-vec e')] ))
+                [new-ctx (conj acc-vec e')]))
             [ctx []]
             v)
 
@@ -80,10 +84,23 @@
   "Resolve and update the object at index `idx` in ctx's :objects vector.
    Resolving will also reduce a new context with any required values converted to indirect references."
   [ctx idx]
-  (let [obj (nth (:objects ctx) idx)
-        [ctx' resolved] (resolve-value ctx obj)
-        objs (assoc (:objects ctx') idx resolved)]
-    (assoc ctx' :objects objs)))
+  (let [obj (nth (:objects ctx) idx)]
+    (if (serializable-map? obj)
+      ;; For top-level objects we want to keep the resolved map in-place
+      ;; (don't add it as a new indirect object). Resolve nested values
+      ;; inside the map but then store the resulting map back at `idx`.
+      (let [[ctx' resolved-map]
+            (reduce (fn [[acc-ctx acc-map] [k val]]
+                      (let [[new-ctx val'] (resolve-value acc-ctx val)]
+                        [new-ctx (assoc acc-map k val')]))
+                    [ctx {}]
+                    obj)
+            objs (assoc (:objects ctx') idx resolved-map)]
+        (assoc ctx' :objects objs))
+      ;; Non-map objects: use the general resolver which may append indirect objects
+      (let [[ctx' resolved] (resolve-value ctx obj)
+            objs (assoc (:objects ctx') idx resolved)]
+        (assoc ctx' :objects objs)))))
 
 (defn resolve-context-objects
   "Walk the pdf context's :objects vector and resolve nested values so

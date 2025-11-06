@@ -24,8 +24,12 @@
 (def pdf-ctx-2
   (->
    (new-pdf)
-   (with-page (-> (new-page (inches->dim 8.5) (inches->dim 11))
-                  (with-text (new-text (new-font "C:\\Windows\\Fonts\\arial.ttf") "Hello, PDF!"))))))
+   (with-page (->
+               (new-page (inches->dim 8.5) (inches->dim 11))
+               (with-text
+                 (new-text
+                  (new-font "/System/Library/Fonts/SFCompact.ttf")
+                  "Hello World"))))))
 
 (defn -main []
   (println (validate-context pdf-ctx))
