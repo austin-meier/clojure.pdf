@@ -1,7 +1,6 @@
 (ns context.page
   (:require
-   [file.xref :refer [->ref]]
-   [utils.collection :refer [first-index]]
+   [context.pdf :refer [catalog-idx]]
    [utils.dimension :refer [dim->points]])
   (:import
    [utils.dimension Dimension]))
@@ -9,32 +8,22 @@
 
 ;; This contains functions for creating and manipulating PDF page contexts
 
-(defn root-pages-idx
-  "Returns the index of the page root (Pages object) in the context's :objects vector"
-  [ctx]
-  (first-index #(= :pages (:type %1)) (:objects ctx)))
-
-(defn root-pages-ref
-  "Returns the indirect reference number of the page root (Pages object)"
-  [ctx]
-  (->ref (root-pages-idx ctx)))
-
 ;; Eventually maybe this is pure data as well without a reference.
 ;; would need updates within the context resolver
 (defn with-page
   [ctx page-ctx]
-  (let [pages-idx (root-pages-idx ctx)
-        page-ctx' (assoc page-ctx :parent (->ref pages-idx))
-        page-ref (->ref (count (:objects ctx)))]
+  (let [catalog-idx (catalog-idx ctx)]
+  (println "Adding page to catalog idx:" catalog-idx)
     (-> ctx
-        (update :objects conj page-ctx')
-        (update-in [:objects pages-idx :kids] conj page-ctx)
-        (update-in [:objects pages-idx :count] (fnil inc 0)))))
+        (update :objects conj page-ctx)
+        (update-in [:objects catalog-idx :pages :kids] conj page-ctx)
+        (update-in [:objects catalog-idx :pages :count] (fnil inc 0)))))
 
 (defn new-page
   "Creates a new page context for use within the pdf context."
   [^Dimension width ^Dimension height]
   {:type :page
+   :parent nil ;; to be set by resolver
    :mediaBox [0 0 (dim->points width) (dim->points height)]})
 
 (defn with-stream

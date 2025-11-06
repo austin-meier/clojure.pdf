@@ -33,6 +33,6 @@
                   "Hello World"))))))
 
 (defn -main []
-  (println (validate-context pdf-ctx))
+  ;;(println (validate-context pdf-ctx))
   (println pdf-ctx-2)
   (spit "./test.pdf" (serialize pdf-ctx-2)))

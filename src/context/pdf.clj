@@ -16,19 +16,22 @@
    :objects
    [{:type :catalog
      :version 1.7
-     :pages (->ref 1)}
-    {:type :pages
-     :kids []}]})
+     :pages {:type :pages :kids []}}]})
 
 (defn get-catalog
   "Returns the document catalog object from the context"
   [ctx]
   (first (filter #(= :catalog (:type %1)) (:objects ctx))))
 
+(defn catalog-idx
+  "Returns the index of the document catalog object in the context's :objects vector"
+  [ctx]
+  (first-index #(= :catalog (:type %1)) (:objects ctx)))
+
 (defn catalog-ref
   "Returns the indirect reference number of the document catalog"
   [ctx]
-  (->ref (first-index #(= :catalog (:type %1)) (:objects ctx))))
+  (->ref (catalog-idx ctx)))
 
 (defn add-object
   "Adds an object to the context's :objects vector and returns [updated-ctx obj-ref] for reducabilty"
@@ -51,7 +54,11 @@
        (not (indirect-ref? m))))
 
 (defn- resolve-value
-  [ctx v]
+  "Resolve a value `v` in the context of an enclosing object. If
+   `parent` (the enclosing object) is provided, child maps will have
+   their `:parent` key set to an indirect reference to that object.
+   Returns [ctx resolved-value]."
+  [ctx v parent]
   ;;(println v)
   (cond
     (pdf-stream? v)
@@ -59,19 +66,26 @@
       [ctx' ref])
 
     (serializable-map? v)
-    (let [[ctx' resolved-map]
+    (let [[ctx v]
+          (if (and parent (contains? v :parent))
+            ;; Ensure parent is in the context and get its indirect ref
+            (let [[ctx parent-ref] (swap-with-ref ctx parent)]
+              [ctx (assoc v :parent parent-ref)])
+            [ctx v])
+          [ctx resolved-map]
           (reduce (fn [[acc-ctx acc-map] [k val]]
-                    (let [[new-ctx val'] (resolve-value acc-ctx val)]
+                    (let [[new-ctx val'] (resolve-value acc-ctx val v)]
                       [new-ctx (assoc acc-map k val')]))
                   [ctx {}]
                   v)]
+
       ;; Add the resolved map as an indirect object and return its ref
       ;; Eventually can add more fancy logic like if less than 4 keys inline it
-      (add-object ctx' resolved-map))
+      (add-object ctx resolved-map))
 
     (sequential? v)
     (reduce (fn [[acc-ctx acc-vec] elem]
-              (let [[new-ctx e'] (resolve-value acc-ctx elem)]
+              (let [[new-ctx e'] (resolve-value acc-ctx elem v)]
                 [new-ctx (conj acc-vec e')]))
             [ctx []]
             v)
@@ -89,15 +103,15 @@
       ;; Top level maps don't become indirect objects themselves. Resolve nested values
       (let [[ctx' resolved-map]
             (reduce (fn [[acc-ctx acc-map] [k val]]
-                      (let [[new-ctx val'] (resolve-value acc-ctx val)]
-                        [new-ctx (assoc acc-map k val')]))
+                      (let [[new-ctx val'] (resolve-value acc-ctx val obj)]
+                        [new-ctx (assoc acc-map k val')]  ))
                     [ctx {}]
                     obj)
             objs (assoc (:objects ctx') idx resolved-map)]
         (assoc ctx' :objects objs))
 
-      ;; Resolve non map values
-      (let [[ctx' resolved] (resolve-value ctx obj)
+  ;; Resolve non map values
+  (let [[ctx' resolved] (resolve-value ctx obj idx)
             objs (assoc (:objects ctx') idx resolved)]
         (assoc ctx' :objects objs)))))
 
