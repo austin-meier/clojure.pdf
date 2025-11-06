@@ -1,6 +1,7 @@
 (ns context.text.core
   (:require
-   [context.stream :refer [string->stream]]))
+   [context.stream :refer [string->stream]]
+   [utils.dimension :refer [dim->points]]))
 
 (defn resource-type-prefix
   [resource-type]
@@ -40,10 +41,10 @@
 
 (defn new-text
   "Creates a new text context for use on a page."
-  [font-ctx text]
-  {:text (string->stream "BT
+  [x y font-ctx text]
+  {:text (string->stream (format "BT
 /F0 24 Tf
-100 700 Td
-(Hello World) Tj
-ET")
+%f %f Td
+(%s) Tj
+ET" (dim->points x) (dim->points y) text))
    :font font-ctx})

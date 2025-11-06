@@ -86,9 +86,7 @@
   [ctx idx]
   (let [obj (nth (:objects ctx) idx)]
     (if (serializable-map? obj)
-      ;; For top-level objects we want to keep the resolved map in-place
-      ;; (don't add it as a new indirect object). Resolve nested values
-      ;; inside the map but then store the resulting map back at `idx`.
+      ;; Top level maps don't become indirect objects themselves. Resolve nested values
       (let [[ctx' resolved-map]
             (reduce (fn [[acc-ctx acc-map] [k val]]
                       (let [[new-ctx val'] (resolve-value acc-ctx val)]
@@ -97,7 +95,8 @@
                     obj)
             objs (assoc (:objects ctx') idx resolved-map)]
         (assoc ctx' :objects objs))
-      ;; Non-map objects: use the general resolver which may append indirect objects
+
+      ;; Resolve non map values
       (let [[ctx' resolved] (resolve-value ctx obj)
             objs (assoc (:objects ctx') idx resolved)]
         (assoc ctx' :objects objs)))))

@@ -28,9 +28,11 @@
                (new-page (inches->dim 8.5) (inches->dim 11))
                (with-text
                  (new-text
-                  (new-font "/System/Library/Fonts/SFCompact.ttf")
+                  (inches->dim 4.25) (inches->dim 5.5)
+                  (new-font "C:/Windows/Fonts/arial.ttf")
                   "Hello World"))))))
 
 (defn -main []
   (println (validate-context pdf-ctx))
+  (println pdf-ctx-2)
   (spit "./test.pdf" (serialize pdf-ctx-2)))
