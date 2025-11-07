@@ -1,7 +1,7 @@
 (ns context.text.font
   (:require
    [context.stream :refer [bytes->stream]]
-   [context.text.font-parser :refer [parse-font-tables]]
+   [context.text.font-parser :refer [parse-font-tables sfnt-bytes]]
    [utils.io :refer [file->bytes]])
   (:import
    [java.awt Font]
@@ -22,14 +22,15 @@
     :OpenType))
 
 (defn new-font [path]
-  (let [bytes (file->bytes path)
+  (let [file-bytes (file->bytes path)
+        sfnt (sfnt-bytes file-bytes)
         font-format (detect-font-format path)
-        font-tables (parse-font-tables bytes)]
+        font-tables (parse-font-tables sfnt)]
     (try
       (with-open [stream (FileInputStream. path)]
         (let [font (Font/createFont font-format stream)]
           {:type :font
-           :subtype (if (= font-format Font/TRUETYPE_FONT) :TrueType :Type1)
+           :subtype (if (= font-format Font/TRUETYPE_FONT) :open-type :type1-c)
            :base-font (symbol (.getName font))
            :font-descriptor
            {:type :font-descriptor
@@ -39,12 +40,12 @@
             :descent (:descent font-tables)
             :cap-height (:ascent font-tables)
             :stem-v 80
-            :font-bbox [(:xMin font-tables)
+            :font-b-box [(:xMin font-tables)
                         (:yMin font-tables)
                         (:xMax font-tables)
                         (:yMax font-tables)]
             :font-name (symbol (.getName font))
-            :font-file-3 (bytes->stream bytes {:subtype (get-font-subtype font-format)})}}))
+            :font-file-3 (bytes->stream sfnt {:length1 (count sfnt) :sub-type (get-font-subtype font-format)})}}))
 
       (catch Exception e
         (println "Font load failed:" (.getMessage e))

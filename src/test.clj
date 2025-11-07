@@ -29,7 +29,7 @@
                (with-text
                  (new-text
                   (inches->dim 4.25) (inches->dim 5.5)
-                  (new-font "C:/Windows/Fonts/arial.ttf")
+                  (new-font "C:/Ubuntu-Regular.ttf")
                   "Hello World"))))))
 
 (defn -main []

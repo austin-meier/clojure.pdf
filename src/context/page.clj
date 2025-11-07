@@ -28,7 +28,7 @@
         page-ref (->ref (count (:objects ctx)))]
     (-> ctx
         (update :objects conj page-ctx')
-        (update-in [:objects pages-idx :kids] conj page-ctx)
+        (update-in [:objects pages-idx :kids] conj page-ref)
         (update-in [:objects pages-idx :count] (fnil inc 0)))))
 
 (defn new-page

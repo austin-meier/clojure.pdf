@@ -12,10 +12,10 @@
 
 ;; This contains the root PDF context structure and core functions for creating contexts
 (defn new-pdf []
-  {:version 1.7
+  {:version 2.0
    :objects
    [{:type :catalog
-     :version 1.7
+     :version 2.0
      :pages (->ref 1)}
     {:type :pages
      :kids []}]})
