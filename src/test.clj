@@ -27,10 +27,11 @@
    (with-page (->
                (new-page (inches->dim 8.5) (inches->dim 11))
                (with-text
+                 (inches->dim 3) (inches->dim 10)
                  (new-text
-                  (inches->dim 4.25) (inches->dim 5.5)
-                  (new-font "C:/Ubuntu-Regular.ttf")
-                  "Hello World"))))))
+                 "I just be some text"
+                  (new-font "/users/austin/Ubuntu-Regular.ttf")
+                  ))))))
 
 (defn -main []
   (println (validate-context pdf-ctx))

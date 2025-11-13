@@ -50,7 +50,7 @@
         acc))))
 
 (defn parse-head [buf offset]
-  (.position buf (+ offset 36)) ;; skip to bbox
+  (.position buf (+ offset 36))
   {:xMin (read-int16 buf)
    :yMin (read-int16 buf)
    :xMax (read-int16 buf)

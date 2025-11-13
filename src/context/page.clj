@@ -8,7 +8,6 @@
 
 
 ;; This contains functions for creating and manipulating PDF page contexts
-
 (defn root-pages-idx
   "Returns the index of the page root (Pages object) in the context's :objects vector"
   [ctx]
@@ -42,9 +41,34 @@
   [page-ctx stream]
   (update page-ctx :contents conj stream))
 
-(defn add-resource
-  "Adds resource to the page context."
-  [page-ctx resource]
-  (if (:resources page-ctx)
-    (update page-ctx :resources merge resource)
-    (assoc page-ctx :resources resource)))
+(defn resource-type-prefix
+  [resource-type]
+  (case resource-type
+    :font "F"
+    :xobject "X"
+    :color-space "CS"
+    :pattern "P"
+    :ext-gstate "GS"
+    (throw (ex-info (str "Unknown resource type: " resource-type) {}))))
+
+(defn next-resource-key
+  [page-ctx resource-type]
+  (str
+   (resource-type-prefix resource-type)
+   (count (get-in page-ctx [page-ctx :resources resource-type]))))
+
+(defn resource-exists?
+  "Checks if a resource exists in the page resource context."
+  [page-ctx resource-type resource]
+  (some (fn [[k v]] (when (= v resource) k))
+        (get-in page-ctx [page-ctx :resources resource-type])))
+
+(defn add-or-get-resource
+  "Adds the resource to the page and returns the key for usage."
+  [page-ctx resource-type resource]
+  (let [existing-resource (resource-exists? page-ctx resource-type resource)]
+    (if existing-resource
+      [page-ctx existing-resource]
+      (let [res-key (next-resource-key page-ctx resource-type)]
+        [(update page-ctx :resources assoc-in [resource-type res-key] resource) res-key]))))
+
