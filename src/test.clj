@@ -30,7 +30,7 @@
                  (inches->dim 3) (inches->dim 10)
                  (new-text
                  "I just be some text"
-                  (new-font "/users/austin/Ubuntu-Regular.ttf")
+                  (new-font "./Ubuntu-Regular.ttf")
                   ))))))
 
 (defn -main []
