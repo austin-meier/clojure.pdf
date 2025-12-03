@@ -6,7 +6,8 @@
    [context.text.core :refer [new-text with-text]]
    [context.text.font :refer [new-font]]
    [utils.dimension :refer [inches->dim]]
-   [validation.context :refer [validate-context]]))
+   [validation.context :refer [validate-context]]
+   [clojure.string :as str]))
 
 (def draw-stream
   (str
@@ -29,11 +30,11 @@
                (with-text
                  (inches->dim 3) (inches->dim 10)
                  (new-text
-                 "I just be some text"
-                  (new-font "./Ubuntu-Regular.ttf")
-                  ))))))
+                  "I just be some text"
+                  (new-font "./Ubuntu-Regular.ttf")))))))
 
 (defn -main []
   (println (validate-context pdf-ctx))
   (println pdf-ctx-2)
   (spit "./test.pdf" (serialize pdf-ctx-2)))
+
