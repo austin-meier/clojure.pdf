@@ -36,11 +36,11 @@
 
 (def test
   [{:section :offset-table
-    :fields  [[:sfntVersion    :uint32]   ;; 0x00010000 for TrueType outlines or 'OTTO' for CFF
-              [:numTables      :uint16]
-              [:searchRange    :uint16]
-              [:entrySelector  :uint16]
-              [:rangeShift     :uint16]]}])
+    :fields  [[:sfntVersion    :u32]   ;; 0x00010000 for TrueType outlines or 'OTTO' for CFF
+              [:numTables      :u16]
+              [:searchRange    :u16]
+              [:entrySelector  :u16]
+              [:rangeShift     :u16]]}])
 ;;   {:section :table-directory
 ;;    :repeat  (fn [ctx] (get-in ctx [:data :offset-table :numTables]))
 ;;    :fields  [[:tag       :Tag]      ;; e.g. "head" "cmap" "name" etc.
