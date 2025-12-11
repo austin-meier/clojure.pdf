@@ -1,43 +1,128 @@
-(ns memory)
+(ns utils.memory
+  (:require
+   [clojure.java.io :as io]))
+
+;; Java bindings
+(defn file->bytes [file-path]
+  (-> file-path
+      io/file
+      .toPath
+      java.nio.file.Files/readAllBytes
+      vec))
 
 
-;; https://adobe-type-tools.github.io/font-tech-notes/pdfs/5176.CFF.pdf
+(def byte-count
+  {:char 1
+   :u8 1
+   :u16 2
+   :u24 3
+   :u32 4
+   :u64 8
+   :u128 16
+   :i8 1
+   :i16 2
+   :i24 3
+   :i32 4
+   :i64 8
+   :i128 16
+   :f32 4
+   :f64 8})
 
-(def ttf-types
-  {:uint8	:u8
-   :int8	:i8
-   :uint16	:u16
-   :int16	:i16
-   :uint24	:u24
-   :uint32	:u32
-   :int32	:i32
-   :Fixed	:i32 ;;32-bit signed fixed-point number (16.16)
-   :FWORD	:i16 ;;int16 that describes a quantity in font design units.
-   :UFWORD	:u16 ;;uint16 that describes a quantity in font design units.
-   :F2DOT14	:i16 ;;16-bit signed fixed number with the low 14 bits of fraction (2.14).
-   :LONGDATETIME	:i64 ;;Date and time represented in number of seconds since 12:00 midnight, January 1, 1904, UTC. The value is represented as a signed 64-bit integer.
-   :Tag [:uint8, :uint8, :uint8, :uint8] ;;	Array of four uint8s (length = 32 bits) used to identify a table, design-variation axis, script, language system, feature, or baseline.
-   :Offset8	:uint8 ;;8-bit offset to a table, same as uint8, NULL offset = 0x00
-   :Offset16	:uint16 ;;Short offset to a table, same as uint16, NULL offset = 0x0000
-   :Offset24	:uint24 ;;24-bit offset to a table, same as uint24, NULL offset = 0x000000
-   :Offset32	:uint32 ;;Long offset to a table, same as uint32, NULL offset = 0x00000000
-   :Version16Dot16 :u32 ;;Packed 32-bit value with major and minor version numbers.
-   })
+(defn parse-type
+  [type bytes]
+  (println "Parsing type:" type "from bytes:" bytes)
+  (case type
+    :char (char (nth bytes 0))
+    :u8   (nth bytes 0)
+    :i8   (let [b (nth bytes 0)] (if (>= b 128) (- b 256) b))
+    :u16  (reduce (fn [acc b] (+ (bit-shift-left acc 8) b)) 0 bytes)
+    :i16  (let [val (reduce (fn [acc b] (+ (bit-shift-left acc 8) b)) 0 bytes)]
+            (if (>= val 32768) (- val 65536) val))
+    :u24  (reduce (fn [acc b] (+ (bit-shift-left acc 8) b)) 0 bytes)
+    :u32  (reduce (fn [acc b] (+ (bit-shift-left acc 8) b)) 0 bytes)
+    :i32  (let [val (reduce (fn [acc b] (+ (bit-shift-left acc 8) b)) 0 bytes)]
+            (if (>= val 2147483648) (- val 4294967296) val))
+    :i64  (let [val (reduce (fn [acc b] (+ (bit-shift-left acc 8) b)) 0 bytes)]
+            (if (>= val 9223372036854775808) (- val 18446744073709551616) val))
+    :f32  (let [int-val (reduce (fn [acc b] (+ (bit-shift-left acc 8) b)) 0 bytes)]
+            (Float/intBitsToFloat int-val))
+    :f64  (let [long-val (reduce (fn [acc b] (+ (bit-shift-left acc 8) b)) 0 bytes)]
+            (Double/longBitsToDouble long-val))
+    nil))
 
-(defn )
+(defn resolve-type
+  [type lookup]
+  (cond
+    (number? type) type
+    (keyword? type) (resolve-type (lookup type) lookup)
+    (vector? type) (mapv #(resolve-type % lookup) type)))
 
-(defn resolve-types
+(defn resolve-type-lengths
   [type-map]
-  (reduce-kv
-   (fn [m k v]
-     (cond
-       (primitive-type? v) (assoc m k v)
-       (vector? v) (assoc m k (mapv type-map v))
-       :else (assoc m k (type-map v))))
-   {}
-   type-map))
+  (let [merged (merge type-map byte-count)]
+    (reduce-kv
+     (fn [m k v]
+       (assoc m k (resolve-type v merged)))
+     {}
+     merged)))
 
-(comment
-  (resolve-types ttf-types)
 
-  )
+(defn parse-section
+  [ctx section]
+  (reduce
+   (fn [ctx [field-key type-key]]
+     (let [bytes (subvec (get-in ctx [:ctx :bytes])
+                         (get-in ctx [:ctx :offset])
+                         (+ (get-in ctx [:ctx :offset])
+                            (get-in ctx [:ctx :types type-key])))]
+       (-> ctx
+           (assoc-in [:data field-key]
+                     (if (:raw-bytes? ctx)
+                       bytes
+                       (parse-type type-key bytes))))))
+   {:ctx ctx
+    :taken []
+    :data {}}
+   (:fields section)))
+
+(defn repeatedly-parse-section
+  [ctx section]
+  (reduce
+   (fn [ctx _]
+     (let [parsed (parse-section ctx section)
+           taken-bytes (reduce + (map #(get-in ctx [:ctx :types (second %)]) (:fields section)))]
+       (-> ctx
+           (update :data conj (:data parsed))
+           (update-in [:ctx :offset] + taken-bytes))))
+   {:ctx ctx
+    :data []}
+   (range (if (fn? (:repeat section))
+            ((:repeat section) ctx)
+            (:repeat section)))))
+
+(defn parse-fn-for-section
+  [section ctx]
+  (cond
+    (:repeat section) repeatedly-parse-section
+    :else parse-section))
+
+(defn new-parse-ctx
+  [byte-array types]
+  {:bytes byte-array
+   :types types
+   :offset 0
+   :data {}})
+
+(defn parse-binary
+  [byte-array layout type-aliases]
+  (let
+   [ctx (new-parse-ctx byte-array (resolve-type-lengths type-aliases))]
+    (reduce
+     (fn [ctx section]
+       (assoc-in ctx [:data (:section section)]
+                 (:data ((parse-fn-for-section section ctx) ctx section))))
+     ctx layout)))
+
+(defn parse-binary-file
+  [input layout type-aliases]
+  (parse-binary (file->bytes input) layout type-aliases))
