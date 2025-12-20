@@ -21,17 +21,19 @@
    (with-page (-> (new-page (inches->dim 8.5) (inches->dim 11))
                   (with-stream (string->stream draw-stream))))))
 
+(let 2)
+
 (def pdf-ctx-2
-  (->
-   (new-pdf)
-   (with-page (->
-               (new-page (inches->dim 8.5) (inches->dim 11))
-               (with-text
-                 (inches->dim 3) (inches->dim 10)
-                 (new-text
-                 "I just be some text"
-                  (new-font "./Ubuntu-Regular.ttf")
-                  ))))))
+     (->
+      (new-pdf)
+      (with-page (->
+                  (new-page (inches->dim 8.5) (inches->dim 11))
+                  (with-text
+                   (inches->dim 3) (inches->dim 10)
+                   (new-text
+                    "I just be some text"
+                    (new-font "./Ubuntu-Regular.ttf")
+                    ))))))
 
 (defn -main []
   (println (validate-context pdf-ctx))
