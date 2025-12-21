@@ -3,6 +3,7 @@
    [clojure.java.io :as io]))
 
 ;; Java bindings
+;; Probably want to use ByteBuffer here
 (defn file->bytes [file-path]
   (-> file-path
       io/file
@@ -10,27 +11,11 @@
       java.nio.file.Files/readAllBytes
       vec))
 
-
-(def byte-count
-  {:char 1
-   :u8 1
-   :u16 2
-   :u24 3
-   :u32 4
-   :u64 8
-   :u128 16
-   :i8 1
-   :i16 2
-   :i24 3
-   :i32 4
-   :i64 8
-   :i128 16
-   :f32 4
-   :f64 8})
+;; TODO: js bindings
+;; probably use DataView
 
 (defn parse-type
   [type bytes]
-  (println "Parsing type:" type "from bytes:" bytes)
   (case type
     :char (char (nth bytes 0))
     :u8   (nth bytes 0)
@@ -50,6 +35,23 @@
             (Double/longBitsToDouble long-val))
     nil))
 
+(def byte-count
+  {:char 1
+   :u8 1
+   :u16 2
+   :u24 3
+   :u32 4
+   :u64 8
+   :u128 16
+   :i8 1
+   :i16 2
+   :i24 3
+   :i32 4
+   :i64 8
+   :i128 16
+   :f32 4
+   :f64 8})
+
 (defn resolve-type
   [type lookup]
   (cond
@@ -65,7 +67,6 @@
        (assoc m k (resolve-type v merged)))
      {}
      merged)))
-
 
 (defn parse-section
   [ctx section]

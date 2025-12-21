@@ -34,21 +34,22 @@
 (resolve-type-lengths ttf-type-aliases) ;; side-effect resolution (legacy)
 
 
-(def test
+(def otf-layout
   [{:section :offset-table
-    :fields  [[:sfntVersion    :u32]   ;; 0x00010000 for TrueType outlines or 'OTTO' for CFF
+    :fields  [[:sfntVersion    :u32]
               [:numTables      :u16]
               [:searchRange    :u16]
               [:entrySelector  :u16]
-              [:rangeShift     :u16]]}])
-;;   {:section :table-directory
-;;    :repeat  (fn [ctx] (get-in ctx [:data :offset-table :numTables]))
-;;    :fields  [[:tag       :Tag]      ;; e.g. "head" "cmap" "name" etc.
-;;              [:checkSum  :uint32]
-;;              [:offset    :uint32]
-;;              [:length    :uint32]]}])
+              [:rangeShift     :u16]]}
 
-(parse-binary-file "./Ubuntu-Regular.ttf" test ttf-type-aliases)
+  {:section :table-directory
+   :repeat  (fn [ctx] (get-in ctx [:data :offset-table :numTables]))
+   :fields  [[:tag       :Tag]
+             [:checkSum  :uint32]
+             [:offset    :uint32]
+             [:length    :uint32]]}])
+
+(parse-binary-file "./Ubuntu-Regular.ttf" otf-layout ttf-type-aliases)
 
 
 
