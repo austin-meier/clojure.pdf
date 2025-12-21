@@ -21,6 +21,8 @@
    (with-page (-> (new-page (inches->dim 8.5) (inches->dim 11))
                   (with-stream (string->stream draw-stream))))))
 
+(let 2)
+
 (def pdf-ctx-2
      (->
       (new-pdf)
